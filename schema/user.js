@@ -1,4 +1,4 @@
-const { Mongoose } = require("mongoose");
+const Mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 
 const UserSchema = new Mongoose.Schema({
@@ -24,3 +24,10 @@ UserSchema.pre("save", function (next) {
     next();
   }
 });
+
+UserSchema.methods.usernameExist = async function (username) {
+  const result = await Mongoose.model("User").findOne({ username });
+  return result > 0;
+};
+
+module.exports = Mongoose.model("User", UserSchema);
