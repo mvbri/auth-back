@@ -30,4 +30,9 @@ UserSchema.methods.usernameExist = async function (username) {
   return result.length > 0;
 };
 
+UserSchema.methods.comparePassword = async function (password, hash) {
+  const same = await bcrypt.compare(password, hash);
+  return same;
+};
+
 module.exports = Mongoose.model("User", UserSchema);
