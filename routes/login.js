@@ -16,7 +16,6 @@ router.post("/", async (require, res) => {
 
   const user = await User.findOne({ username });
   if (user) {
-    console.log(user);
     const correctPassword = await user.comparePassword(password, user.password);
 
     if (correctPassword) {

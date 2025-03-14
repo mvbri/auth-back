@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const app = express();
 const mongoose = require("mongoose");
+const authenticate = require("./auth/authenticate");
 
 require("dotenv").config();
 
@@ -18,7 +19,7 @@ async function main() {
 main().catch(console.error);
 
 app.use("/api/signup", require("./routes/signup"));
-app.use("/api/user", require("./routes/user"));
+app.use("/api/user", authenticate, require("./routes/user"));
 app.use("/api/login", require("./routes/login"));
 app.use("/api/signout", require("./routes/signout"));
 app.use("/api/refresh-token", require("./routes/refreshToken"));
