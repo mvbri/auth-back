@@ -13,7 +13,7 @@ function sign(payload, isAccessToken) {
   );
 }
 
-function generateAccesToken(user) {
+function generateAccessToken(user) {
   return sign({ user }, true);
 }
 
@@ -21,4 +21,4 @@ function generateRefreshToken(user) {
   return sign({ user }, false);
 }
 
-module.exports = { generateAccesToken, generateRefreshToken };
+module.exports = { generateAccessToken, generateRefreshToken };

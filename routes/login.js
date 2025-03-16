@@ -19,7 +19,7 @@ router.post("/", async (require, res) => {
     const correctPassword = await user.comparePassword(password, user.password);
 
     if (correctPassword) {
-      const accessToken = user.createAccesToken();
+      const accessToken = user.createAccessToken();
       const refreshToken = await user.createRefreshToken();
 
       res.status(200).json(

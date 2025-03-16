@@ -1,7 +1,7 @@
 const Mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const {
-  generateAccesToken,
+  generateAccessToken,
   generateRefreshToken,
 } = require("../auth/generateTokens");
 
@@ -42,8 +42,8 @@ UserSchema.methods.comparePassword = async function (password, hash) {
   return same;
 };
 
-UserSchema.methods.createAccesToken = function () {
-  return generateAccesToken(getUserInfo(this));
+UserSchema.methods.createAccessToken = function () {
+  return generateAccessToken(getUserInfo(this));
 };
 
 UserSchema.methods.createRefreshToken = async function () {

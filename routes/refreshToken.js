@@ -28,9 +28,8 @@ router.post("/", async (req, res) => {
       return res
         .status(401)
         .json(jsonResponse(401, { error: "Unauthorized: Invalid token" }));
-
+        
     const accessToken = generateAccessToken(payload.user);
-    console.log(accessToken);
 
     return res.status(200).json(jsonResponse(200, { accessToken }));
   } catch (error) {
