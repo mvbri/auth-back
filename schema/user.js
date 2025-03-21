@@ -10,9 +10,10 @@ const getUserInfo = require("../lib/getUserInfo");
 
 const UserSchema = new Mongoose.Schema({
   id: { type: Object },
-  username: { type: String, require: true, unique: true },
-  password: { type: String, require: true },
   name: { type: String, require: true },
+  lastName: { type: String, require: true },
+  email: { type: String, require: true, unique: true },
+  password: { type: String, require: true },
 });
 
 UserSchema.pre("save", function (next) {
@@ -32,8 +33,8 @@ UserSchema.pre("save", function (next) {
   }
 });
 
-UserSchema.methods.usernameExists = async function (username) {
-  const result = await Mongoose.model("User").find({ username });
+UserSchema.methods.usernameExists = async function (email) {
+  const result = await Mongoose.model("User").find({ email });
   return result.length > 0;
 };
 

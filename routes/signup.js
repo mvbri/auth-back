@@ -3,10 +3,10 @@ const User = require("../schema/user");
 
 const router = require("express").Router();
 
-router.post("/", async (require, res) => {
-  const { username, name, password } = require.body;
+router.post("/", async (req, res) => {
+  const { name, lastName, email, password } = req.body.values;
 
-  if (!!!username || !!!name || !!!password) {
+  if (!!!name || !!!lastName || !!!email || !!!password) {
     return res.status(400).json(
       jsonResponse(400, {
         error: "Filds are required",
@@ -18,17 +18,17 @@ router.post("/", async (require, res) => {
 
   try {
     const user = new User();
-    const exists = await user.usernameExists(username);
+    const exists = await user.usernameExists(email);
 
     if (exists) {
       return res.status(400).json(
         jsonResponse(400, {
-          error: "Username already exists",
+          error: "Email already exists",
         })
       );
     }
 
-    const newUser = new User({ username, name, password });
+    const newUser = new User({ name, lastName, email, password });
 
     newUser.save();
 

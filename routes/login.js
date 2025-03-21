@@ -3,10 +3,10 @@ const User = require("../schema/user");
 const router = require("express").Router();
 const getUserInfo = require("../lib/getUserInfo");
 
-router.post("/", async (require, res) => {
-  const { username, password } = require.body;
+router.post("/", async (req, res) => {
+  const { email, password } = req.body;
 
-  if (!!!username || !!!password) {
+  if (!!!email || !!!password) {
     return res.status(400).json(
       jsonResponse(400, {
         error: "Filds are required",
@@ -14,7 +14,7 @@ router.post("/", async (require, res) => {
     );
   }
 
-  const user = await User.findOne({ username });
+  const user = await User.findOne({ email });
   if (user) {
     const correctPassword = await user.comparePassword(password, user.password);
 

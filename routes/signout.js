@@ -8,8 +8,6 @@ router.delete("/", async (req, res) => {
     const refreshToken = getTokenFromHeader(req.headers);
 
     if (refreshToken) {
-      console.log(Token.findOne({ token: refreshToken }));
-
       await Token.findOneAndDelete({ token: refreshToken });
       res.status(200).json(jsonResponse(200, { message: "Token deleted" }));
     }
