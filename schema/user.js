@@ -14,6 +14,7 @@ const UserSchema = new Mongoose.Schema({
   lastName: { type: String, require: true },
   email: { type: String, require: true, unique: true },
   password: { type: String, require: true },
+  role: { type: String, require: true },
 });
 
 UserSchema.pre("save", function (next) {

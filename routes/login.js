@@ -6,6 +6,8 @@ const getUserInfo = require("../lib/getUserInfo");
 router.post("/", async (req, res) => {
   const { email, password } = req.body;
 
+  const role = "admin";
+
   if (!!!email || !!!password) {
     return res.status(400).json(
       jsonResponse(400, {
@@ -14,7 +16,7 @@ router.post("/", async (req, res) => {
     );
   }
 
-  const user = await User.findOne({ email });
+  const user = await User.findOne({ email, role});
   if (user) {
     const correctPassword = await user.comparePassword(password, user.password);
 

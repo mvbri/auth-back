@@ -6,6 +6,8 @@ const router = require("express").Router();
 router.post("/", async (req, res) => {
   const { name, lastName, email, password } = req.body.values;
 
+  const role = 'customer';
+
   if (!!!name || !!!lastName || !!!email || !!!password) {
     return res.status(400).json(
       jsonResponse(400, {
@@ -28,7 +30,7 @@ router.post("/", async (req, res) => {
       );
     }
 
-    const newUser = new User({ name, lastName, email, password });
+    const newUser = new User({ name, lastName, email, password, role });
 
     newUser.save();
 
