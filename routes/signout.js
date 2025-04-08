@@ -1,6 +1,5 @@
 const getTokenFromHeader = require("../auth/getTokenFromHeader");
 const router = require("express").Router();
-const { jsonResponse } = require("../lib/jsonResponse");
 const Token = require("../schema/token");
 
 router.delete("/", async (req, res) => {
@@ -9,7 +8,7 @@ router.delete("/", async (req, res) => {
 
     if (refreshToken) {
       await Token.findOneAndDelete({ token: refreshToken });
-      res.status(200).json(jsonResponse(200, { message: "Token deleted" }));
+      res.status(200).json( { message: "Token deleted" });
     }
   } catch (err) {
     console.log(err);

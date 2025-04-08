@@ -1,4 +1,3 @@
-const { jsonResponse } = require("../lib/jsonResponse");
 const User = require("../schema/user");
 const router = require("express").Router();
 const getUserInfo = require("../lib/getUserInfo");
@@ -10,9 +9,9 @@ router.post("/", async (req, res) => {
 
   if (!!!email || !!!password) {
     return res.status(400).json(
-      jsonResponse(400, {
+      {
         error: "Filds are required",
-      })
+      }
     );
   }
 
@@ -25,24 +24,24 @@ router.post("/", async (req, res) => {
       const refreshToken = await user.createRefreshToken();
 
       res.status(200).json(
-        jsonResponse(200, {
+         {
           user: getUserInfo(user),
           accessToken,
           refreshToken,
-        })
+        }
       );
     } else {
       res.status(400).json(
-        jsonResponse(400, {
+        {
           error: "User or password incorrect",
-        })
+        }
       );
     }
   } else {
     res.status(400).json(
-      jsonResponse(400, {
+      {
         error: "User not found",
-      })
+      }
     );
   }
 });
