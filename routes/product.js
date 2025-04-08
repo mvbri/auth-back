@@ -77,7 +77,7 @@ const show = async (req, res) => {
 
 const showBySlug = async (req, res) => {
     try {
-        const product = await Product.findById({slug : req.params.slug}).populate(['images']);
+        const product = await Product.findOne({slug : req.params.slug}).populate(['images']);
 
         return res.status(200).json({ data: product });
     } catch (error) {
