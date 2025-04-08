@@ -1,4 +1,3 @@
-const { jsonResponse } = require("../lib/jsonResponse");
 const Product = require("../schema/product");
 const fs = require('fs');
 const Category = require("../schema/category");
@@ -20,8 +19,10 @@ const index = async (req, res) => {
 
 const create = async (req, res) => {
 
-    const { name, description, stock, price, priceIVA, category } = req.body;
+    const { name, description, stock, price, priceIVA } = req.body;
     const files = req.files;
+
+    const category = req.body.category.split(',');
 
     try {
         const product = new Product({ name, description, stock, price, priceIVA , category});
@@ -74,15 +75,27 @@ const show = async (req, res) => {
     }
 };
 
+const showBySlug = async (req, res) => {
+    try {
+        const product = await Product.findById({slug : req.params.slug}).populate(['images']);
+
+        return res.status(200).json({ data: product });
+    } catch (error) {
+        console.error(error);
+        res.status(404).json({ message: error });
+    }
+};
+
 
 const update = async (req, res) => {
 
-    const { name, description, stock, price, priceIVA, category } = req.body;
+    const { name, description, stock, price, priceIVA } = req.body;
+    const category = req.body.category.split(',');
     const id_ = req.params.productId
     const files = req.files;
 
     try {
-        const savedProduct = await Product.findByIdAndUpdate(id_,{ name, description, stock, price, priceIVA, category, });
+        const savedProduct = await Product.findByIdAndUpdate(id_,{ name, description, stock, price, priceIVA, category });
 
         const fileRecords = files.map(file => ({
             url: file.filename,
@@ -147,18 +160,6 @@ const destroy = async (req, res) => {
 
 };
 
-const getCategories = async (req, res) => {
-    try {
-        const data = await Category.find();
-        return res.status(200).json({ data: data });
-    } catch (error) {
-        console.error(error);
-
-        res.status(500).json({ message: "error getting category" });
-
-    }
-};
-
 const destroyImage = async (req, res) => {
     try {
         const image = await Image.findByIdAndDelete(req.params.imageId);
@@ -180,4 +181,4 @@ const destroyImage = async (req, res) => {
     }
 };
 
-module.exports = { index, show, create, update, destroy, getCategories, destroyImage };
+module.exports = { index, show, create, update, destroy, destroyImage, showBySlug };

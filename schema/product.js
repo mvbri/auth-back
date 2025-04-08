@@ -1,5 +1,8 @@
 const Mongoose = require("mongoose");
 
+const slug = require('mongoose-slug-updater')
+
+Mongoose.plugin(slug)
 
 const ProductSchema = new Mongoose.Schema({
   id: { type: Object },
@@ -8,6 +11,7 @@ const ProductSchema = new Mongoose.Schema({
   stock: { type: Number, require: true },
   price: { type: Number, require: true },
   priceIVA: { type: Number, require: true },
+  slug: {  type: String, slug: "name"  , unique: true, index: true, slugPaddingSize: 4},
   images: [{
     type: Mongoose.Schema.Types.ObjectId, 
     ref: 'Image',
@@ -17,6 +21,5 @@ const ProductSchema = new Mongoose.Schema({
     ref: 'Category',
   }]
 });
-
 
 module.exports = Mongoose.model("Product", ProductSchema);

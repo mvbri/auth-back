@@ -4,6 +4,7 @@ const app = express();
 const mongoose = require("mongoose");
 const authenticate = require("./auth/authenticate");
 const product = require("./routes/product");
+const category = require("./routes/category");
 const upload = require("./lib/upload");
 const path = require("path");
 const isAdmin = require("./auth/isAdmin");
@@ -24,12 +25,12 @@ async function main() {
 
 main().catch(console.error);
 
-app.use("/api/signup", require("./routes/signup"));
-app.use("/api/user", authenticate, require("./routes/user"));
 
+// admin routes
 app.get("/api/admin/products/", [authenticate, isAdmin], product.index);
 
-app.get("/api/admin/category/", [authenticate, isAdmin], product.getCategories);
+app.get("/api/admin/category/", [authenticate, isAdmin], category.index);
+
 
 app.get(
   "/api/admin/products/:productId",
@@ -57,16 +58,33 @@ app.post(
   product.create
 );
 
-app.use("/api/login", require("./routes/login"));
-
 app.use("/api/admin/login", require("./routes/loginAdmin"));
 
+// customer routes
+
+
+app.get("/api/category/", category.index); // get categories
+
+app.get("/api/category/:slug", category.show); // get category by slug and products 
+
+app.get(
+  "/api/product/:slug",
+  product.showBySlug
+); // get product by slug url
+
+app.use("/api/login", require("./routes/login"));
+
 app.use("/api/signout", require("./routes/signout"));
+
 app.use("/api/refresh-token", require("./routes/refreshToken"));
 
-app.get("/", (require, res) => {
-  res.send("Hello Word!!");
-});
+app.use("/api/signup", require("./routes/signup"));
+
+app.use("/api/user", authenticate, require("./routes/user"));
+
+// app.get("/", (require, res) => {
+//   res.send("Hello Word!!");
+// });
 
 app.listen(port, () => {
   console.log(`Sever is runing on port ${port}`);
