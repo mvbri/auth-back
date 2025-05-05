@@ -181,4 +181,27 @@ const destroyImage = async (req, res) => {
     }
 };
 
-module.exports = { index, show, create, update, destroy, destroyImage, showBySlug };
+const search = async (req, res) => {
+    const { q } = req.query;
+
+    if (!q) {
+        return res.status(400).json({ message: "the parameter q is required" });
+      }
+
+      try {
+        const products = await Product.find({
+          $or: [
+            { name: { $regex: q, $options: "i" } }, 
+            { description: { $regex: q, $options: "i" } } 
+          ]
+        }).populate(['images', 'category']);
+    
+        res.json(products);
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Error when searching for products." });
+      }
+
+}
+
+module.exports = { index, show, create, update, destroy, destroyImage, showBySlug, search };

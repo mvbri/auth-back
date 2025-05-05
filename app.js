@@ -63,6 +63,8 @@ app.use("/api/admin/login", require("./routes/loginAdmin"));
 // customer routes
 
 
+app.get("/api/product/search", product.search); // get products
+
 app.get("/api/category/", category.index); // get categories
 
 app.get("/api/category/:slug", category.show); // get category by slug and products 
