@@ -25,12 +25,10 @@ async function main() {
 
 main().catch(console.error);
 
-
 // admin routes
 app.get("/api/admin/products/", [authenticate, isAdmin], product.index);
 
 app.get("/api/admin/category/", [authenticate, isAdmin], category.index);
-
 
 app.get(
   "/api/admin/products/:productId",
@@ -62,15 +60,11 @@ app.use("/api/admin/login", require("./routes/loginAdmin"));
 
 // customer routes
 
-
 app.get("/api/category/", category.index); // get categories
 
-app.get("/api/category/:slug", category.show); // get category by slug and products 
+app.get("/api/category/:slug", category.show); // get category by slug and products
 
-app.get(
-  "/api/product/:slug",
-  product.showBySlug
-); // get product by slug url
+app.get("/api/product/:slug", product.showBySlug); // get product by slug url
 
 app.use("/api/login", require("./routes/login"));
 
