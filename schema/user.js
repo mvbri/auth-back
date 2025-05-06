@@ -15,6 +15,7 @@ const UserSchema = new Mongoose.Schema({
   email: { type: String, require: true, unique: true },
   password: { type: String, require: true },
   role: { type: String, require: true },
+  status: { type: Boolean, default: true }, // Campo booleano que indica si el carrito ha sido ordenado
 });
 
 UserSchema.pre("save", function (next) {

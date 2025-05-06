@@ -4,10 +4,14 @@ const app = express();
 const mongoose = require("mongoose");
 const authenticate = require("./auth/authenticate");
 const product = require("./routes/product");
+const order = require("./routes/order");
+const cart = require("./routes/cart");
 const category = require("./routes/category");
 const upload = require("./lib/upload");
 const path = require("path");
 const isAdmin = require("./auth/isAdmin");
+const users = require("./routes/users");
+
 
 require("dotenv").config();
 
@@ -27,6 +31,30 @@ main().catch(console.error);
 
 
 // admin routes
+
+app.get("/api/admin/users/delivery", [authenticate, isAdmin], users.getDeliveries);
+
+app.get(
+  "/api/admin/users/delivery/:userId",
+  [authenticate, isAdmin],
+  users.getDelivery
+);
+
+app.put("/api/admin/users/delivery/:userId", [authenticate, isAdmin], users.updateDelivery);
+
+app.delete(
+  "/api/admin/users/delivery/:userId",
+  [authenticate, isAdmin],
+  users.deleTeDelivery
+);
+
+app.post(
+  "/api/admin/products",
+  [ authenticate, isAdmin],
+  users.createDelivery
+);
+
+
 app.get("/api/admin/products/", [authenticate, isAdmin], product.index);
 
 app.get("/api/admin/category/", [authenticate, isAdmin], category.index);
@@ -61,6 +89,36 @@ app.post(
 app.use("/api/admin/login", require("./routes/loginAdmin"));
 
 // customer routes
+app.get(
+  "/api/cart",
+  // [authenticate],
+  cart.getCart
+);
+
+app.post(
+  "/api/cart",
+  // [authenticate],
+  cart.add
+);
+
+app.put(
+  "/api/cart",
+  // [authenticate],
+  cart.updateQuantity
+);
+
+app.put(
+  "/api/cart/remove",
+  // [authenticate],
+  cart.remove
+);
+
+app.put(
+  "/api/cart/remove/all",
+  // [authenticate],
+  cart.removeAll
+);
+
 
 
 app.get("/api/product/search", product.search); // get products
@@ -83,6 +141,7 @@ app.use("/api/refresh-token", require("./routes/refreshToken"));
 app.use("/api/signup", require("./routes/signup"));
 
 app.use("/api/user", authenticate, require("./routes/user"));
+
 
 // app.get("/", (require, res) => {
 //   res.send("Hello Word!!");
