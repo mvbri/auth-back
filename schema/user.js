@@ -35,7 +35,7 @@ UserSchema.pre("save", function (next) {
   }
 });
 
-UserSchema.methods.usernameExists = async function (email) {
+UserSchema.methods.emailExists = async function (email) {
   const result = await Mongoose.model("User").find({ email });
   return result.length > 0;
 };

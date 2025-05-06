@@ -29,7 +29,6 @@ async function main() {
 
 main().catch(console.error);
 
-
 // admin routes
 
 app.get("/api/admin/users/delivery", [authenticate, isAdmin], users.getDeliveries);
@@ -58,7 +57,6 @@ app.post(
 app.get("/api/admin/products/", [authenticate, isAdmin], product.index);
 
 app.get("/api/admin/category/", [authenticate, isAdmin], category.index);
-
 
 app.get(
   "/api/admin/products/:productId",
@@ -120,17 +118,13 @@ app.put(
 );
 
 
-
 app.get("/api/product/search", product.search); // get products
 
 app.get("/api/category/", category.index); // get categories
 
-app.get("/api/category/:slug", category.show); // get category by slug and products 
+app.get("/api/category/:slug", category.show); // get category by slug and products
 
-app.get(
-  "/api/product/:slug",
-  product.showBySlug
-); // get product by slug url
+app.get("/api/product/:slug", product.showBySlug); // get product by slug url
 
 app.use("/api/login", require("./routes/login"));
 
