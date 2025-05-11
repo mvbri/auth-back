@@ -87,6 +87,13 @@ app.post(
 app.use("/api/admin/login", require("./routes/loginAdmin"));
 
 // customer routes
+
+app.post(
+  "/api/orders",
+  [authenticate],
+  order.create
+);
+
 app.get(
   "/api/cart",
   // [authenticate],
