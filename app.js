@@ -7,10 +7,11 @@ const product = require("./routes/product");
 const order = require("./routes/order");
 const cart = require("./routes/cart");
 const category = require("./routes/category");
-const upload = require("./lib/upload");
+const {uploadProducts, uploadCategory} = require("./lib/upload");
 const path = require("path");
 const isAdmin = require("./auth/isAdmin");
 const users = require("./routes/users");
+const address = require("./routes/address");
 
 
 require("dotenv").config();
@@ -58,13 +59,19 @@ app.get("/api/admin/products/", [authenticate, isAdmin], product.index);
 
 app.get("/api/admin/category/", [authenticate, isAdmin], category.index);
 
+app.post("/api/admin/category/", [uploadCategory.single('image')/*, authenticate, isAdmin*/], category.create);
+
+app.put("/api/admin/category/:categoryId", [uploadCategory.single('image')/*, authenticate, isAdmin*/], category.update);
+
+app.delete("/api/admin/category/:categoryId", [/*, authenticate, isAdmin*/], category.destroy);
+
 app.get(
   "/api/admin/products/:productId",
   [authenticate, isAdmin],
   product.show
 );
 
-app.put("/api/admin/products/:productId", [upload.any()], product.update);
+app.put("/api/admin/products/:productId", [uploadProducts.any()], product.update);
 
 app.delete(
   "/api/admin/products/:productId",
@@ -80,13 +87,51 @@ app.delete(
 
 app.post(
   "/api/admin/products",
-  [upload.any(), authenticate, isAdmin],
+  [uploadProducts.any(), authenticate, isAdmin],
   product.create
+);
+
+app.get(
+  "/api/admin/addresses",
+  [authenticate, isAdmin],
+  address.adminIndex
 );
 
 app.use("/api/admin/login", require("./routes/loginAdmin"));
 
 // customer routes
+
+app.get(
+  "/api/address",
+  [authenticate],
+  address.index
+);
+
+app.post(
+  "/api/address",
+  [authenticate],
+  address.create
+);
+
+
+app.get(
+  "/api/address/:addressId",
+  [authenticate],
+  address.show
+);
+
+
+app.put(
+  "/api/address/:addressId",
+  [authenticate],
+  address.update
+);
+
+app.delete(
+  "/api/address/:addressId",
+  [authenticate],
+  address.destroy
+);
 
 app.post(
   "/api/orders",
@@ -96,31 +141,31 @@ app.post(
 
 app.get(
   "/api/cart",
-  // [authenticate],
+  [authenticate],
   cart.getCart
 );
 
 app.post(
   "/api/cart",
-  // [authenticate],
+  [authenticate],
   cart.add
 );
 
 app.put(
   "/api/cart",
-  // [authenticate],
+  [authenticate],
   cart.updateQuantity
 );
 
 app.put(
   "/api/cart/remove",
-  // [authenticate],
+  [authenticate],
   cart.remove
 );
 
 app.put(
   "/api/cart/remove/all",
-  // [authenticate],
+  [authenticate],
   cart.removeAll
 );
 

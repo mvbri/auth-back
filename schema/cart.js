@@ -2,7 +2,7 @@ const Mongoose = require("mongoose");
 
 const CartSchema = new Mongoose.Schema({
   id: { type: Object }, // Este campo puede ser opcional si no se utiliza.
-  customer_id: { type: Mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  customer: { type: Mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   detail: [ // Cambiado de `products` a `detail`
     {
       product: { // Referencia al producto

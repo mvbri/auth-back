@@ -19,7 +19,8 @@ const ProductSchema = new Mongoose.Schema({
   category: [{
     type: Mongoose.Schema.Types.ObjectId, 
     ref: 'Category',
-  }]
+  }],
+  status: { type: Boolean, default: true }, // Campo booleano que indica si el producto esta activo
 });
 
 module.exports = Mongoose.model("Product", ProductSchema);

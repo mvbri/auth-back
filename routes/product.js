@@ -31,7 +31,7 @@ const create = async (req, res) => {
 
         const fileRecords = files.map(file => ({
             url: file.filename,
-            product_id: savedProduct._id,
+            product: savedProduct._id,
         }));
 
         const images = await Promise.all(fileRecords.map(async (imageName) => {
@@ -77,7 +77,7 @@ const show = async (req, res) => {
 
 const showBySlug = async (req, res) => {
     try {
-        const product = await Product.findOne({slug : req.params.slug}).populate(['images']);
+        const product = await Product.findOne({slug : req.params.slug, status : true}).populate(['images']);
 
         return res.status(200).json({ data: product });
     } catch (error) {
@@ -99,7 +99,7 @@ const update = async (req, res) => {
 
         const fileRecords = files.map(file => ({
             url: file.filename,
-            product_id: savedProduct._id,
+            product: savedProduct._id,
         }));
 
         const images = await Promise.all(fileRecords.map(async (imageName) => {
@@ -135,7 +135,7 @@ const destroy = async (req, res) => {
 
     try {
         const product = await Product.findByIdAndDelete(req.params.productId);
-        const image = await Image.find({ product_id: req.params.productId });
+        const image = await Image.find({ product: req.params.productId });
 
         for (const key in image) {
             fs.unlink(`./public/images/products/${image[key].url}`, (err) => {
@@ -193,7 +193,7 @@ const search = async (req, res) => {
           $or: [
             { name: { $regex: q, $options: "i" } }, 
             { description: { $regex: q, $options: "i" } } 
-          ]
+          ], status : true
         }).populate(['images', 'category']);
     
         res.json(products);

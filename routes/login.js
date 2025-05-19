@@ -15,7 +15,7 @@ router.post("/", async (req, res) => {
     );
   }
 
-  const user = await User.findOne({ email, role });
+  const user = await User.findOne({ email, role, status: true });
   if (user) {
     const correctPassword = await user.comparePassword(password, user.password);
 

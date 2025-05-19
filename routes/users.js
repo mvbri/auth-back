@@ -29,7 +29,7 @@ const getDelivery = async (req, res) => {
 }
 
 const createDelivery = async (req, res) => {
-    const { name, lastName, email, password } = req.body;
+    const { name,  email, password } = req.body;
 
     const role = 'delivery';
 
@@ -45,7 +45,7 @@ const createDelivery = async (req, res) => {
           );
         }
     
-        const newUser = new User({ name, lastName, email, password, role });
+        const newUser = new User({ name,  email, password, role });
     
         newUser.save();
     
@@ -65,11 +65,11 @@ const createDelivery = async (req, res) => {
 const updateDelivery = async (req, res) => {
     const _id = req.params.userId
 
-    const { name, lastName, email, password } = req.body;
+    const { name,  email, password } = req.body;
 
     
      try {
-        const user = await findByIdAndUpdate(_id,{ name, lastName, email, password })
+        const user = await findByIdAndUpdate(_id,{ name,  email, password })
     
         user.save();
         return res.status(201).json({ data: user });

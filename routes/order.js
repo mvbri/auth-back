@@ -4,19 +4,19 @@ const Order = require("../schema/order");
 const delivery = 150;
 
 const create = async (req, res) => {
-    const { _id } = req.body;
+    const { address , _id } = req.body;
     try {
         const cart = await Cart.findById(_id).populate(['detail.product']);
         const order = await new Order({});
 
         order.status = "En verificación de pago";
-        order.cart_id = cart._id;
-        order.customer_id = req.user.id;
+        order.address = address;
+        order.cart = cart._id;
+        order.customer = req.user.id;
         order.total_delivery = cart.total_delivery;
         order.total_products = cart.total_products;
         order.total_iva = cart.total_iva;
         order.total = cart.total;
-
         cart.detail.forEach((item) => {
             order.detail.push({
                 product: item.product._id,
@@ -33,7 +33,7 @@ const create = async (req, res) => {
         await cart.save();
 
         const newCart = new Cart({
-            customer_id: req.user ? req.user.id : "6819225f509bc921fcb14624",
+            customer: req.user ? req.user.id : "6819225f509bc921fcb14624",
             detail: [],
             total_delivery: delivery,
             total_products: 0,
@@ -54,5 +54,28 @@ const create = async (req, res) => {
 
 }
 
-module.exports = { create };
+const index = async (req, res) => {
+    try {
+        const data = await Order.find().populate(['customer']);
+        return res.status(200).json({ data: data });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "error getting orders" });
+
+    }
+
+}
+
+const customerIndex = async (req, res) => {
+    try {
+        const data = await Order.find({customer : req.user._id}).populate(['delivery']);
+        return res.status(200).json({ data: data });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "error getting orders" });
+
+    }
+}
+
+module.exports = { create, customerIndex, index };
 

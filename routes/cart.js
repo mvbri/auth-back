@@ -1,3 +1,4 @@
+const Address = require("../schema/address");
 const Cart = require("../schema/cart");
 const Product = require("../schema/product");
 
@@ -50,11 +51,14 @@ const getCart = async (req, res) => {
             cart.total_delivery = delivery;
             cart.total_quantity = totalQuantity; // Actualizar cantidad total
 
+
+            const addresses = await Address.find({ user_id: req.user._id });
+
             await cart.save();
 
-            return res.status(200).json({ data: cart });
+            return res.status(200).json({ data: cart, addresses: addresses });
         } else {
-            const cart = await Cart.findOne({ customer_id: req.user ? req.user._id : "6819225f509bc921fcb14624", ordered: false }).sort({ _id: -1 }).populate(['detail.product']);
+            const cart = await Cart.findOne({ customer: req.user._id, ordered: false }).sort({ _id: -1 }).populate(['detail.product']);
 
             if (cart !== null) {
                 // Obtener los IDs de todos los productos en el carrito
@@ -104,7 +108,7 @@ const getCart = async (req, res) => {
             } else {
 
                 const newCart = new Cart({
-                    customer_id: req.user ? req.user._id : "6819225f509bc921fcb14624",
+                    customer: req.user._id,
                     detail: [],
                     total_delivery: delivery,
                     total_products: 0,
@@ -115,7 +119,9 @@ const getCart = async (req, res) => {
 
                 await newCart.save();
 
-                return res.status(200).json({ data: newCart });
+                const addresses = await Address.find({ user_id: req.user._id });
+
+                return res.status(200).json({ data: newCart, addresses: addresses });
             }
 
         }
@@ -205,7 +211,7 @@ const add = async (req, res) => {
         } else {
             // Crear un nuevo carrito si no existe
             const newCart = new Cart({
-                customer_id: req.user ? req.user._id : "6819225f509bc921fcb14624",
+                customer: req.user._id,
                 detail: [{
                     product: product_id,
                     quantity: quantity,
@@ -314,7 +320,7 @@ const updateQuantity = async (req, res) => {
         } else {
             // Crear un nuevo carrito si no existe
             const newCart = new Cart({
-                customer_id: req.user ? req.user._id : "6819225f509bc921fcb14624",
+                customer: req.user._id,
                 detail: [{
                     product: product_id,
                     quantity: quantity,

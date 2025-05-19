@@ -2,9 +2,10 @@ const Mongoose = require("mongoose");
 
 const OrderSchema = new Mongoose.Schema({
   id: { type: Object }, 
-  customer_id: { type: Mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  delivery_id: { type: Mongoose.Schema.Types.ObjectId, ref: 'User' },
-  cart_id: { type: Mongoose.Schema.Types.ObjectId, ref: 'Cart', required: true },
+  customer: { type: Mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  address: { type: Mongoose.Schema.Types.ObjectId, ref: 'Address', required: true },
+  delivery: { type: Mongoose.Schema.Types.ObjectId, ref: 'User' },
+  cart: { type: Mongoose.Schema.Types.ObjectId, ref: 'Cart', required: true },
   detail: [
     {
       product: { 

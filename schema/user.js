@@ -11,11 +11,12 @@ const getUserInfo = require("../lib/getUserInfo");
 const UserSchema = new Mongoose.Schema({
   id: { type: Object },
   name: { type: String, require: true },
-  lastName: { type: String, require: true },
   email: { type: String, require: true, unique: true },
   password: { type: String, require: true },
+  question: { type: String, require: true },
+  answer: { type: String, require: true },
   role: { type: String, require: true },
-  status: { type: Boolean, default: true }, // Campo booleano que indica si el carrito ha sido ordenado
+  status: { type: Boolean, default: true }, // Campo booleano que indica si el usuario esta activo
 });
 
 UserSchema.pre("save", function (next) {
@@ -30,7 +31,19 @@ UserSchema.pre("save", function (next) {
         next();
       }
     });
-  } else {
+  } else if(this.isModified("answer") || this.isNew){
+    const document = this;
+
+    bcrypt.hash(document.answer, 10, (err, hash) => {
+      if (err) {
+        next(err);
+      } else {
+        document.answer = hash;
+        next();
+      }
+    });
+  }
+  else {
     next();
   }
 });
