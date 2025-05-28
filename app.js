@@ -7,11 +7,13 @@ const product = require("./routes/product");
 const order = require("./routes/order");
 const cart = require("./routes/cart");
 const category = require("./routes/category");
-const {uploadProducts, uploadCategory} = require("./lib/upload");
+const { uploadProducts, uploadCategory, uploadSlider, uploadVoucher } = require("./lib/upload");
 const path = require("path");
 const isAdmin = require("./auth/isAdmin");
 const users = require("./routes/users");
 const address = require("./routes/address");
+const pdf = require("./routes/pdf");
+const user = require("./schema/user");
 
 
 require("dotenv").config();
@@ -30,9 +32,25 @@ async function main() {
 
 main().catch(console.error);
 
+app.post(
+  "/api/orders",
+  [uploadVoucher.single('image'),
+    authenticate],
+  order.store
+);
+
+
 // admin routes
 
 app.get("/api/admin/users/delivery", [authenticate, isAdmin], users.getDeliveries);
+
+app.get("/api/admin/ordersData/", [authenticate, isAdmin], order.getOrdersData);
+
+app.get("/api/admin/orders/", [authenticate, isAdmin], order.index);
+
+app.get("/api/admin/orders/:orderId", [authenticate, isAdmin], order.adminShow);
+
+app.put("/api/admin/orders/:orderId", [authenticate, isAdmin], order.update);
 
 app.get(
   "/api/admin/users/delivery/:userId",
@@ -49,21 +67,20 @@ app.delete(
 );
 
 app.post(
-  "/api/admin/products",
-  [ authenticate, isAdmin],
+  "/api/admin/users/delivery",
+  [authenticate, isAdmin],
   users.createDelivery
 );
-
 
 app.get("/api/admin/products/", [authenticate, isAdmin], product.index);
 
 app.get("/api/admin/category/", [authenticate, isAdmin], category.index);
 
-app.post("/api/admin/category/", [uploadCategory.single('image')/*, authenticate, isAdmin*/], category.create);
+app.post("/api/admin/category/", [uploadCategory.single('image'),/* authenticate, isAdmin*/], category.create);
 
-app.put("/api/admin/category/:categoryId", [uploadCategory.single('image')/*, authenticate, isAdmin*/], category.update);
+app.put("/api/admin/category/:categoryId", [uploadCategory.single('image'), authenticate, isAdmin], category.update);
 
-app.delete("/api/admin/category/:categoryId", [/*, authenticate, isAdmin*/], category.destroy);
+app.delete("/api/admin/category/:categoryId", [authenticate, isAdmin], category.destroy);
 
 app.get(
   "/api/admin/products/:productId",
@@ -97,9 +114,45 @@ app.get(
   address.adminIndex
 );
 
+app.post(
+  "/api/admin/addresses",
+  [authenticate, isAdmin],
+  address.create
+);
+
+app.get(
+  "/api/admin/addresses/:addressId",
+  [authenticate, isAdmin],
+  address.show
+);
+
+app.put(
+  "/api/admin/addresses/:addressId",
+  [authenticate, isAdmin],
+  address.update
+);
+
+app.delete(
+  "/api/admin/addresses/:addressId",
+  [authenticate, isAdmin],
+  address.destroy
+);
+
 app.use("/api/admin/login", require("./routes/loginAdmin"));
 
 // customer routes
+
+app.get(
+  "/api/orders",
+  [authenticate],
+  order.customerIndex
+);
+
+app.get(
+  "/api/orders/:orderId",
+  [authenticate],
+  order.show
+);
 
 app.get(
   "/api/address",
@@ -133,11 +186,12 @@ app.delete(
   address.destroy
 );
 
-app.post(
-  "/api/orders",
+app.get(
+  "/api/checkout/",
   [authenticate],
-  order.create
+  order.checkout
 );
+
 
 app.get(
   "/api/cart",
@@ -187,6 +241,12 @@ app.use("/api/refresh-token", require("./routes/refreshToken"));
 app.use("/api/signup", require("./routes/signup"));
 
 app.use("/api/user", authenticate, require("./routes/user"));
+
+
+
+app.use("/api/test/pdf", pdf.show);
+
+
 
 
 // app.get("/", (require, res) => {

@@ -18,31 +18,33 @@ const index = async (req, res) => {
 const create = async (req, res) => {
 
     const { name, description, menu } = req.body;
+    
     const file = req.file;
 
-
     try {
-        const category = new Category({ name, description , menu});
+        const category = new Category({ name, description, menu });
 
         const savedCategory = await category.save();
 
-        if(typeof(file) !== "undefined"){
+        if (typeof (file) !== "undefined") {
             const newImage = new Image({
                 url: file.filename,
                 category: savedCategory._id,
             });
-    
+
             await newImage.save();
-    
+
+
             savedCategory.image = newImage._id;
-    
+
             await savedCategory.save();
-        }       
+
+        }
 
         return res.status(201).json({ data: savedCategory });
 
     } catch (error) {
-        if(typeof(file) !== "undefined"){
+        if (typeof (file) !== "undefined") {
             fs.unlink(file.path, (err) => {
                 if (err) {
                     console.error(`Error removing file: ${err}`);
@@ -63,7 +65,7 @@ const show = async (req, res) => {
     try {
         const category = await Category.findOne({ slug: req.params.slug }).populate(['image']);
 
-        const product = await Product.find({ category: { $in: [category._id] } }).populate(['images']);
+        const product = await Product.find({ status: true, category: { $in: [category._id] } }).populate(['images']);
 
         return res.status(200).json({ data: category, products: product });
     } catch (error) {
@@ -79,26 +81,25 @@ const update = async (req, res) => {
     const id_ = req.params.categoryId
 
     try {
-        const savedCategory = await Category.findByIdAndUpdate(id_,{ name, description, menu });
+        const savedCategory = await Category.findByIdAndUpdate(id_, { name, description, menu });
 
-        console.log(savedCategory.image)
 
-        if(typeof(file) !== "undefined"){
+        if (typeof (file) !== "undefined") {
 
-            const oldImage = typeof(savedCategory.image) !== "undefined" ? savedCategory.image : false;
+            const oldImage = typeof (savedCategory.image) !== "undefined" ? savedCategory.image : false;
 
             const newImage = new Image({
                 url: file.filename,
                 category: savedCategory._id,
             });
-    
+
             await newImage.save();
-    
+
             savedCategory.image = newImage._id;
-    
+
             await savedCategory.save();
 
-            if(oldImage){
+            if (oldImage) {
                 const oldImageDelete = await Image.findByIdAndDelete(oldImage);
                 fs.unlink(`./public/images/category/${oldImageDelete.url}`, (err) => {
                     if (err) {
@@ -109,12 +110,12 @@ const update = async (req, res) => {
                 });
             }
 
-        }       
+        }
 
         return res.status(200).json({ data: savedCategory });
 
     } catch (error) {
-        if(typeof(file) !== "undefined"){
+        if (typeof (file) !== "undefined") {
             fs.unlink(file.path, (err) => {
                 if (err) {
                     console.error(`Error removing file: ${err}`);
@@ -136,13 +137,13 @@ const destroy = async (req, res) => {
     try {
         const product = await Product.find({ category: { $in: [req.params.categoryId] } });
 
-        if(product){
+        if (product) {
             return res.status(422).json({ message: "La categoría posee productos asociados" });
         }
-        
+
         const category = await Category.findByIdAndDelete(req.params.categoryId);
 
-        if(typeof(category.image) !== 'undefined'){
+        if (typeof (category.image) !== 'undefined') {
             const imageDelete = await Image.findByIdAndDelete(category.image);
 
             fs.unlink(`./public/images/category/${imageDelete.url}`, (err) => {

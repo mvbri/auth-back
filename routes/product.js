@@ -19,13 +19,13 @@ const index = async (req, res) => {
 
 const create = async (req, res) => {
 
-    const { name, description, stock, price, priceIVA } = req.body;
+    const { name, description, stock, price, priceIVA, status } = req.body;
     const files = req.files;
 
     const category = req.body.category.split(',');
 
     try {
-        const product = new Product({ name, description, stock, price, priceIVA , category});
+        const product = new Product({ name, description, stock, price, priceIVA , category, status});
 
         const savedProduct = await product.save();
 
@@ -65,7 +65,7 @@ const create = async (req, res) => {
 
 const show = async (req, res) => {
     try {
-        const product = await Product.findById(req.params.productId).populate(['images']);
+        const product = await Product.findById({ _id : req.params.productId}).populate(['images']);
         const category = await Category.find();
 
         return res.status(200).json({ data: product, category : category });
@@ -76,8 +76,12 @@ const show = async (req, res) => {
 };
 
 const showBySlug = async (req, res) => {
+
+    const status = true;
+    const slug = req.params.slug;
+    
     try {
-        const product = await Product.findOne({slug : req.params.slug, status : true}).populate(['images']);
+        const product = await Product.findOne({slug, status }).populate(['images']);
 
         return res.status(200).json({ data: product });
     } catch (error) {
@@ -89,13 +93,13 @@ const showBySlug = async (req, res) => {
 
 const update = async (req, res) => {
 
-    const { name, description, stock, price, priceIVA } = req.body;
+    const { name, description, stock, price, priceIVA, status } = req.body;
     const category = req.body.category.split(',');
     const id_ = req.params.productId
     const files = req.files;
 
     try {
-        const savedProduct = await Product.findByIdAndUpdate(id_,{ name, description, stock, price, priceIVA, category });
+        const savedProduct = await Product.findByIdAndUpdate(id_,{ name, description, stock, price, priceIVA, category, status });
 
         const fileRecords = files.map(file => ({
             url: file.filename,
@@ -106,8 +110,10 @@ const update = async (req, res) => {
             const newImage = new Image(imageName);
             return await newImage.save();
         }));
+        
+        const new_images = images.map(image => image._id)
 
-        savedProduct.images = images.map(image => image._id);
+        savedProduct.images.push(...new_images);
 
         await savedProduct.save();
 

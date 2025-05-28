@@ -1,18 +1,33 @@
 const Cart = require("../schema/cart");
 const Order = require("../schema/order");
+const Product = require("../schema/product");
+const Image = require("../schema/image");
+const Address = require("../schema/address");
+const User = require("../schema/user");
+const Payment = require("../schema/payment");
+
+
 
 const delivery = 150;
 
-const create = async (req, res) => {
-    const { address , _id } = req.body;
+const store = async (req, res) => {
+    const { reference, date, payment, address, _id } = req.body;
+    const file = req.file;
     try {
         const cart = await Cart.findById(_id).populate(['detail.product']);
         const order = await new Order({});
+        order.customer = req.user.id;
 
         order.status = "En verificación de pago";
         order.address = address;
+        order.voucher = {
+            reference: reference,
+            date: date,
+            payment: payment
+
+        };
+
         order.cart = cart._id;
-        order.customer = req.user.id;
         order.total_delivery = cart.total_delivery;
         order.total_products = cart.total_products;
         order.total_iva = cart.total_iva;
@@ -21,7 +36,8 @@ const create = async (req, res) => {
             order.detail.push({
                 product: item.product._id,
                 quantity: item.quantity,
-                price_unit: item.product.priceIVA,
+                price_unit: item.product.price,
+                price_unit_iva: item.product.priceIVA,
                 price_total: item.product.price * item.quantity,
                 price_total_iva: item.product.priceIVA * item.quantity,
             })
@@ -29,11 +45,28 @@ const create = async (req, res) => {
         })
 
         await order.save();
+
+        if (typeof (file) !== "undefined") {
+
+            const newImage = new Image({
+                url: file.filename,
+                order: order._id,
+            });
+
+            await newImage.save();
+
+            order.voucher.image = newImage._id;
+
+            await order.save();
+
+        }
+
         cart.ordered = true;
+
         await cart.save();
 
         const newCart = new Cart({
-            customer: req.user ? req.user.id : "6819225f509bc921fcb14624",
+            customer: req.user.id,
             detail: [],
             total_delivery: delivery,
             total_products: 0,
@@ -44,20 +77,113 @@ const create = async (req, res) => {
 
         await newCart.save();
 
-        return res.status(200).json({ data: order, cart:  newCart });
+        return res.status(200).json({ data: order, cart: newCart });
 
 
     } catch (error) {
         console.error(error);
-        res.status(412).json({ message: error });
+        res.status(422).json({ message: error });
     }
 
 }
 
 const index = async (req, res) => {
     try {
-        const data = await Order.find().populate(['customer']);
+        const data = await Order.find().populate(['customer', 'voucher.payment', 'voucher.image']);
         return res.status(200).json({ data: data });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "error getting orders" });
+
+    }
+
+}
+
+const update = async (req, res) => {
+    const _id = req.params.orderId;
+    const { delivery, status } = req.body;
+
+
+    try {
+
+        const data = await Order.findByIdAndUpdate(_id, { delivery: delivery, status });
+        return res.status(200).json({ data: data });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "error getting orders" });
+
+    }
+
+}
+
+const show = async (req, res) => {
+    const _id = req.params.orderId;
+
+    try {
+        const data = await Order.findOne({ customer: req.user.id, _id: _id }).populate(['delivery', 'voucher.payment','voucher.image', 'detail.product', 'address']);
+
+        const productIds = data.detail.map(item => item.product);
+
+        const productsInCart = await Product.find({ _id: { $in: productIds } }).populate(['images', 'category']);
+
+        const productMap = productsInCart.reduce((acc, item) => {
+            acc[item._id.toString()] = item; // Guardamos el producto con su ID como clave
+            return acc;
+        }, {});
+
+
+        for (const item of data.detail) {
+
+            const productDetail = productMap[item.product._id.toString()]; // Acceder al producto del mapa
+
+            item.product = {
+                ...productDetail.toObject(), // Convertimos el documento Mongoose a objeto JavaScript
+                images: productDetail.images, // Mapeamos las URLs de las imágenes
+            };
+        }
+
+        return res.status(200).json({ data: data });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "error getting orders" });
+
+    }
+
+}
+
+const adminShow = async (req, res) => {
+    const _id = req.params.orderId;
+
+    try {
+        const data = await Order.findById(_id).populate([ 'customer', 'delivery', 'voucher.payment','voucher.image', 'detail.product', 'address']);
+
+        console.log(data);
+        
+        const delivery = await User.find({ role: "delivery" });
+
+        const productIds = data.detail.map(item => item.product);
+
+        const productsInCart = await Product.find({ _id: { $in: productIds } }).populate(['images', 'category']);
+
+        const productMap = productsInCart.reduce((acc, item) => {
+            acc[item._id.toString()] = item; // Guardamos el producto con su ID como clave
+            return acc;
+        }, {});
+
+
+        for (const item of data.detail) {
+
+            const productDetail = productMap[item.product._id.toString()]; // Acceder al producto del mapa
+
+            item.product = {
+                ...productDetail.toObject(), // Convertimos el documento Mongoose a objeto JavaScript
+                images: productDetail.images, // Mapeamos las URLs de las imágenes
+            };
+        }
+
+
+
+        return res.status(200).json({ data: data, delivery: delivery });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: "error getting orders" });
@@ -67,8 +193,9 @@ const index = async (req, res) => {
 }
 
 const customerIndex = async (req, res) => {
+
     try {
-        const data = await Order.find({customer : req.user._id}).populate(['delivery']);
+        const data = await Order.find({ customer: req.user.id }).populate(['delivery', 'voucher.payment']);
         return res.status(200).json({ data: data });
     } catch (error) {
         console.error(error);
@@ -77,5 +204,73 @@ const customerIndex = async (req, res) => {
     }
 }
 
-module.exports = { create, customerIndex, index };
+const checkout = async (req, res) => {
+
+    try {
+
+        const addresses = await Address.find({ customer: req.user.id });
+
+        const payments = await Payment.find({ status: true });
+
+        return res.status(200).json({ addresses: addresses, payments: payments });
+    }
+    catch (error) {
+        console.error(error);
+        res.status(500).json({ message: error });
+    }
+
+}
+
+const getOrdersData = async (req, res) => {
+    let year = new Date();
+    year = year.getFullYear()
+
+    try {
+        // Generar un array con todos los meses del año
+        const meses = Array.from({ length: 12 }, (_, i) => {
+            return { mes: `${String(i + 1).padStart(2, '0')}`, totalPedidos: 0 };
+        });
+        const resultado = await Order.aggregate([
+            {
+                $match: {
+                    'voucher.date': { $exists: true, $ne: null, $gte: new Date(`${year}-01-01`), $lte: new Date(`${year}-12-31`) },
+                },
+            },
+            {
+                $group: {
+                    _id: { $dateToString: { format: '%m', date: '$voucher.date' } },
+                    totalPedidos: { $sum: 1 },
+                },
+            },
+            {
+                $sort: {
+                    _id: 1,
+                },
+            },
+            {
+                $project: {
+                    mes: '$_id',
+                    totalPedidos: 1,
+                    _id: 0,
+                },
+            },
+        ]);
+        // Convertir el resultado a un objeto para mayor facilidad de manejo
+        const resultadoMap = resultado.reduce((acc, actual) => {
+            acc[actual.mes] = actual.totalPedidos;
+            return acc;
+        }, {});
+        // Combinar los meses con los resultados, asegurando que todos los meses están presentes
+        const finalResultado = meses.map(mes => {
+            return resultadoMap[mes.mes] || 0 // Usa 0 si no hay pedidos
+        });
+
+        return res.status(200).json({ data: finalResultado, });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: error });
+    }
+}
+
+module.exports = { store, update, customerIndex, index, checkout, show, adminShow, getOrdersData };
 

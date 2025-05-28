@@ -3,11 +3,11 @@ const User = require("../schema/user");
 const router = require("express").Router();
 
 router.post("/", async (req, res) => {
-  const { name,  email, password, question, answer } = req.body;
+  const { name,  email, password, question, answer, phone } = req.body;
 
   const role = "customer";
 
-  if (!!!name || !!!email || !!!password) {
+  if (!!!name || !!!email || !!!password || !!!question  || !!!answer || !!!phone) {
     return res.status(400).json({
       error: "Filds are required",
     });
@@ -24,7 +24,7 @@ router.post("/", async (req, res) => {
       });
     }
 
-    const newUser = new User({ name,  email, password, question, answer , role });
+    const newUser = new User({ name,  email, password, question, answer ,phone, role });
 
     newUser.save();
 

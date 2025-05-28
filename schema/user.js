@@ -16,6 +16,7 @@ const UserSchema = new Mongoose.Schema({
   question: { type: String, require: true },
   answer: { type: String, require: true },
   role: { type: String, require: true },
+  phone: { type: String, require: true },
   status: { type: Boolean, default: true }, // Campo booleano que indica si el usuario esta activo
 });
 
@@ -31,7 +32,7 @@ UserSchema.pre("save", function (next) {
         next();
       }
     });
-  } else if(this.isModified("answer") || this.isNew){
+  } if(this.isModified("answer") || this.isNew){
     const document = this;
 
     bcrypt.hash(document.answer, 10, (err, hash) => {

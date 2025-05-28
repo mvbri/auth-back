@@ -1,7 +1,9 @@
 
+const Address = require("../schema/address");
+
 const index = async (req, res) => {
     try {
-        const data = await Address.find({user_id : req.user._id});
+        const data = await Address.find({customer : req.user.id});
         return res.status(200).json({ data: data });
     } catch (error) {
         console.error(error);
@@ -24,12 +26,12 @@ const adminIndex = async (req, res) => {
 
 const create = async (req, res) => {
 
-    const { firstname, lastname, parish, address, phone } = req.body;
+    const { name, parish, address, phone } = req.body;
 
     const customer = req.user.id;
 
     try {
-        const savedAddress = new Address({ firstname, lastname, parish,address, phone, customer });
+        const savedAddress = new Address({ name, parish, address, phone, customer });
 
           await savedAddress.save();
 
@@ -55,11 +57,11 @@ const show = async (req, res) => {
 
 const update = async (req, res) => {
 
-    const { firstname, lastname, parish, address, phone } = req.body;
+    const { name, parish, address, phone } = req.body;
     const id_ = req.params.addressId
 
     try {
-        const savedAddress = await Address.findByIdAndUpdate(id_,{ firstname, lastname, parish, address, phone });
+        const savedAddress = await Address.findByIdAndUpdate(id_,{ name, parish, address, phone });
 
         await savedAddress.save();
 

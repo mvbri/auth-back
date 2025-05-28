@@ -1,23 +1,39 @@
 const Mongoose = require("mongoose");
 
 const OrderSchema = new Mongoose.Schema({
-  id: { type: Object }, 
+  id: { type: Object },
   customer: { type: Mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   address: { type: Mongoose.Schema.Types.ObjectId, ref: 'Address', required: true },
   delivery: { type: Mongoose.Schema.Types.ObjectId, ref: 'User' },
   cart: { type: Mongoose.Schema.Types.ObjectId, ref: 'Cart', required: true },
   detail: [
     {
-      product: { 
+      product: {
         type: Mongoose.Schema.Types.ObjectId,
         ref: 'Product',
       },
-      quantity: { type: Number, required: true, min: 1 }, 
+      quantity: { type: Number, required: true, min: 1 },
       price_unit: { type: Number, required: true, min: 0 }, // Precio unitario del producto
+      price_unit_iva: { type: Number, required: true, min: 0 }, // Precio unitario del producto
       price_total: { type: Number, required: true, min: 0 }, // Precio total por cantidad
       price_total_iva: { type: Number, required: true, min: 0 }, // Precio total incluyendo IVA
     },
   ],
+  voucher: {
+    image: {
+      type: Mongoose.Schema.Types.ObjectId,
+      ref: 'Image',
+    },
+    payment: {
+      type: Mongoose.Schema.Types.ObjectId,
+      ref: 'Payment',
+    },
+    date: {
+      type: Date,
+      min: '2025-01-01',
+    },
+    reference: { type: String },
+  },
   status: { type: String, required: true }, // Estado del pedido
   total_delivery: { type: Number, required: true, min: 0 }, // Costo de entrega
   total_products: { type: Number, required: true, min: 0 }, // Total en productos sin IVA

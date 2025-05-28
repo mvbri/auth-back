@@ -29,7 +29,7 @@ const getDelivery = async (req, res) => {
 }
 
 const createDelivery = async (req, res) => {
-    const { name,  email, password } = req.body;
+    const { name,  email, password, phone, question, answer } = req.body;
 
     const role = 'delivery';
 
@@ -45,7 +45,7 @@ const createDelivery = async (req, res) => {
           );
         }
     
-        const newUser = new User({ name,  email, password, role });
+        const newUser = new User({ name,  email, password, role, phone , question, answer});
     
         newUser.save();
     

@@ -11,16 +11,19 @@ const ProductSchema = new Mongoose.Schema({
   stock: { type: Number, require: true },
   price: { type: Number, require: true },
   priceIVA: { type: Number, require: true },
-  slug: {  type: String, slug: "name"  , unique: true, index: true, slugPaddingSize: 4},
+  slug: { type: String, slug: "name", unique: true, index: true, slugPaddingSize: 4 },
   images: [{
-    type: Mongoose.Schema.Types.ObjectId, 
+    type: Mongoose.Schema.Types.ObjectId,
     ref: 'Image',
   }],
   category: [{
-    type: Mongoose.Schema.Types.ObjectId, 
+    type: Mongoose.Schema.Types.ObjectId,
     ref: 'Category',
   }],
-  status: { type: Boolean, default: true }, // Campo booleano que indica si el producto esta activo
+  status: {
+    type: Boolean,
+    default: false
+  }, // Campo booleano que indica si el producto esta activo
 });
 
 module.exports = Mongoose.model("Product", ProductSchema);

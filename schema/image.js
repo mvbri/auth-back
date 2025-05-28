@@ -5,6 +5,7 @@ const ImageSchema = new Mongoose.Schema({
   id: { type: Object },
   product: { type: Mongoose.Schema.Types.ObjectId, ref: 'Product' },
   category: { type: Mongoose.Schema.Types.ObjectId, ref: 'Category' },
+  order: { type: Mongoose.Schema.Types.ObjectId, ref: 'Order' },
   slider: { type: Boolean, default: false },
   url: { type: String, require: true }  
 });

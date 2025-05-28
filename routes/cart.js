@@ -1,6 +1,6 @@
-const Address = require("../schema/address");
 const Cart = require("../schema/cart");
 const Product = require("../schema/product");
+
 
 const delivery = 150;
 
@@ -51,12 +51,9 @@ const getCart = async (req, res) => {
             cart.total_delivery = delivery;
             cart.total_quantity = totalQuantity; // Actualizar cantidad total
 
-
-            const addresses = await Address.find({ user_id: req.user._id });
-
             await cart.save();
 
-            return res.status(200).json({ data: cart, addresses: addresses });
+            return res.status(200).json({ data: cart });
         } else {
             const cart = await Cart.findOne({ customer: req.user._id, ordered: false }).sort({ _id: -1 }).populate(['detail.product']);
 
@@ -119,9 +116,7 @@ const getCart = async (req, res) => {
 
                 await newCart.save();
 
-                const addresses = await Address.find({ user_id: req.user._id });
-
-                return res.status(200).json({ data: newCart, addresses: addresses });
+                return res.status(200).json({ data: newCart });
             }
 
         }
@@ -211,7 +206,7 @@ const add = async (req, res) => {
         } else {
             // Crear un nuevo carrito si no existe
             const newCart = new Cart({
-                customer: req.user._id,
+                customer: req.user.id,
                 detail: [{
                     product: product_id,
                     quantity: quantity,
@@ -320,7 +315,7 @@ const updateQuantity = async (req, res) => {
         } else {
             // Crear un nuevo carrito si no existe
             const newCart = new Cart({
-                customer: req.user._id,
+                customer: req.user.id,
                 detail: [{
                     product: product_id,
                     quantity: quantity,
