@@ -61,7 +61,7 @@ const create = async (req, res) => {
 
 const show = async (req, res) => {
     try {
-        const category = await Category.findById({ slug: req.params.categoryId }).populate(['image']);
+        const category = await Category.findById(req.params.categoryId).populate(['image']);
 
         return res.status(200).json({ data: category });
     } catch (error) {
