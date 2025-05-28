@@ -78,6 +78,8 @@ app.get("/api/admin/category/", [authenticate, isAdmin], category.index);
 
 app.post("/api/admin/category/", [uploadCategory.single('image'),/* authenticate, isAdmin*/], category.create);
 
+app.get("/api/admin/category/:categoryId", [uploadCategory.single('image'), authenticate, isAdmin], category.show);
+
 app.put("/api/admin/category/:categoryId", [uploadCategory.single('image'), authenticate, isAdmin], category.update);
 
 app.delete("/api/admin/category/:categoryId", [authenticate, isAdmin], category.destroy);
@@ -228,7 +230,7 @@ app.get("/api/product/search", product.search); // get products
 
 app.get("/api/category/", category.index); // get categories
 
-app.get("/api/category/:slug", category.show); // get category by slug and products
+app.get("/api/category/:slug", category.showBySlug); // get category by slug and products
 
 app.get("/api/product/:slug", product.showBySlug); // get product by slug url
 
@@ -244,7 +246,7 @@ app.use("/api/user", authenticate, require("./routes/user"));
 
 
 
-app.use("/api/test/pdf", pdf.show);
+app.use("/api/test/pdf/:startDate/:endDate", pdf.show);
 
 
 

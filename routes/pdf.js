@@ -1,68 +1,39 @@
-const fs = require('fs');
-const pdf = require('pdf-creator-node');
 const path = require("path");
 const Order = require("../schema/order");
+const PDFDocument = require('pdfkit');
 
 const show = async (req, res) => {
+  const { startDate, endDate } = req.params;
   try {
-    const options = {
-      format: "A4",
-      orientation: "landscape",
-      border: "10mm", // Mantén el borde
-      header: {
-        height: "30mm", // Aumenta la altura del header
-        contents: '<div style="text-align: center;"> <h1 class="text-center mb-4">Reporte de Ventas</h1></div>',
-      },
-      footer: {
-        height: "5mm", // Aumenta la altura del footer
-        contents: {
-          default: '<span style="color: #444;">{{page}}</span> de <span>{{pages}}</span>', // fallback value
-        },
-      },
-    };
-
-    const data = await Order.find().populate(['customer', 'voucher.payment']);
-
-    const orders = data.map((item) => {
-      const date = new Date(item.voucher.date);
-      return {
-        date: new Intl.DateTimeFormat('es-VE').format(date),
-        reference: item.voucher.reference,
-        customer: item.customer.name,
-        status: item.status,
-        total: item.total
-      }
+    const orders = await Order.find(
+    //   {
+    //   voucher: { date: { $gte: new Date(startDate), $lte: new Date(endDate) } }
+    // }
+  ).populate(['customer', 'delivery', 'voucher.payment']);
+    const doc = new PDFDocument();
+    doc.addPage({size: 'LETTER'});
+    res.setHeader('Content-disposition', 'attachment; filename=report.pdf');
+    res.setHeader('Content-type', 'application/pdf');
+    doc.pipe(res);
+    // Ruta del logo
+    const orderImagePath = path.join(__dirname,'..', 'public/images/logo.png');
+    doc.image(orderImagePath, 50, 20, { width: 100 });
+    doc.fontSize(25).text('Reporte de ordenes desde ' + startDate + ' hasta ' + endDate, {
+      align: 'center',
     });
-
-    for (let index = 0; index < 100; index++) {
-      orders.push(orders[0]);
-    }
-
-    // Read the HTML template
-    const html = fs.readFileSync(path.join(__dirname, '..', 'templates', 'template.html'), 'utf8');
-
-    const document = {
-      html: html,
-      data: {
-        orders: orders,
-      },
-      type: "buffer"
-
-    };
-
-    const pdfBuffer = await pdf.create(document, options);
-
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', 'attachment; filename="reporte.pdf"');
-    res.send(pdfBuffer);
-
+    doc.moveDown();
+    // Cabecera de la tabla
+    doc.fontSize(12).text('Fecha de pago               Referencia             Banco receptor             Número receptor             Total pagado             Cliente             Estatus             Delivery', {
+      underline: true
+    });
+    orders.forEach(order => {
+      doc.text(`${order.voucher.date}                       ${order.voucher.reference}                       ${order.voucher.payment.bank}                       ${order.voucher.payment.number}                       ${order.total}                       ${order.customer.name}                       ${order.status}                       ${order.delivery.name}`);
+    });
+    doc.end();
   } catch (error) {
     console.error(error);
-    res.status(500).send('Error generating PDF');
+    res.status(500).send('Error generando el PDF');
   }
-
-
-
 };
 
 module.exports = { show };

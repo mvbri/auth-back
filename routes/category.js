@@ -59,9 +59,18 @@ const create = async (req, res) => {
     }
 };
 
-
-
 const show = async (req, res) => {
+    try {
+        const category = await Category.findOne({ slug: req.params.categoryId }).populate(['image']);
+
+        return res.status(200).json({ data: category });
+    } catch (error) {
+        console.error(error);
+        res.status(404).json({ message: error });
+    }
+};
+
+const showBySlug = async (req, res) => {
     try {
         const category = await Category.findOne({ slug: req.params.slug }).populate(['image']);
 
@@ -165,5 +174,5 @@ const destroy = async (req, res) => {
 
 
 
-module.exports = { index, show, create, update, destroy };
+module.exports = { index, show, showBySlug, create, update, destroy };
 
