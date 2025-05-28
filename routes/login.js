@@ -10,12 +10,12 @@ router.post("/", async (req, res) => {
   if (!!!email || !!!password) {
     return res.status(400).json(
       {
-        error: "Filds are required",
+        error: "Rellene todos los campos",
       }
     );
   }
 
-  const user = await User.findOne({ email, role, status: true });
+  const user = await User.findOne({ email, role, status: true }).select('+password');
   if (user) {
     const correctPassword = await user.comparePassword(password, user.password);
 
@@ -33,14 +33,14 @@ router.post("/", async (req, res) => {
     } else {
       res.status(400).json(
         {
-          error: "User or password incorrect",
+          error: "Correo o contraseña incorrecta",
         }
       );
     }
   } else {
     res.status(400).json(
       {
-        error: "User not found",
+        error: "Correo no encontrado",
       }
     );
   }

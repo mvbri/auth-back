@@ -157,8 +157,6 @@ const adminShow = async (req, res) => {
     try {
         const data = await Order.findById(_id).populate([ 'customer', 'delivery', 'voucher.payment','voucher.image', 'detail.product', 'address']);
 
-        console.log(data);
-        
         const delivery = await User.find({ role: "delivery" });
 
         const productIds = data.detail.map(item => item.product);

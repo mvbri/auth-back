@@ -12,9 +12,9 @@ const UserSchema = new Mongoose.Schema({
   id: { type: Object },
   name: { type: String, require: true },
   email: { type: String, require: true, unique: true },
-  password: { type: String, require: true },
+  password: { type: String, require: true ,select: false },
   question: { type: String, require: true },
-  answer: { type: String, require: true },
+  answer: { type: String, require: true, select: false },
   role: { type: String, require: true },
   phone: { type: String, require: true },
   status: { type: Boolean, default: true }, // Campo booleano que indica si el usuario esta activo
@@ -32,7 +32,14 @@ UserSchema.pre("save", function (next) {
         next();
       }
     });
-  } if(this.isModified("answer") || this.isNew){
+  } 
+  else {
+    next();
+  }
+});
+
+UserSchema.pre("save", function (next) {
+ if(this.isModified("answer") || this.isNew){
     const document = this;
 
     bcrypt.hash(document.answer, 10, (err, hash) => {
@@ -58,6 +65,7 @@ UserSchema.methods.comparePassword = async function (password, hash) {
   const same = await bcrypt.compare(password, hash);
   return same;
 };
+
 
 UserSchema.methods.createAccessToken = function () {
   return generateAccessToken(getUserInfo(this));
