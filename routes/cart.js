@@ -5,9 +5,14 @@ const Product = require("../schema/product");
 const delivery = 150;
 
 const getCart = async (req, res) => {
-    const { _id } = req.body;
+    const { _id } = req.query
+
+    if (req.user.role == 'admin' || req.user.role == 'delivery') return res.status(200).json({ data: null, user: req.user });
+
     try {
-        if (typeof _id !== "undefined") {
+
+        if (_id == null || _id == "undefined") {
+
             const cart = await Cart.findOne({ _id: _id, ordered: false }).populate(['detail.product']);
 
             // Obtener los IDs de todos los productos en el carrito
@@ -53,9 +58,10 @@ const getCart = async (req, res) => {
 
             await cart.save();
 
-            return res.status(200).json({ data: cart });
-        } else {
-            const cart = await Cart.findOne({ customer: req.user._id, ordered: false }).sort({ _id: -1 }).populate(['detail.product']);
+            return res.status(200).json({ data: cart, user: req.user });
+        }
+        else {
+            const cart = await Cart.findOne({ customer: req.user.id, ordered: false }).sort({ '_id': -1 }).populate(['detail.product']);
 
             if (cart !== null) {
                 // Obtener los IDs de todos los productos en el carrito
@@ -100,12 +106,12 @@ const getCart = async (req, res) => {
 
                 await cart.save();
 
-                return res.status(200).json({ data: cart });
+                return res.status(200).json({ data: cart, user: req.user });
 
             } else {
 
                 const newCart = new Cart({
-                    customer: req.user._id,
+                    customer: req.user.id,
                     detail: [],
                     total_delivery: delivery,
                     total_products: 0,
@@ -116,13 +122,13 @@ const getCart = async (req, res) => {
 
                 await newCart.save();
 
-                return res.status(200).json({ data: newCart });
+                return res.status(200).json({ data: newCart, user: req.user });
             }
 
         }
     } catch (error) {
         console.error(error);
-        res.status(404).json({ message: error });
+        res.status(500).json({ message: error.message });
     }
 };
 
@@ -218,13 +224,12 @@ const add = async (req, res) => {
                 total_quantity: quantity
             });
 
-            // Añadimos las imágenes del producto nuevo
-            newCart.detail[0].product = {
-                ...product.toObject(), // Convertimos a objeto
-                images: product.images, // Mapeamos las URLs de las imágenes
-            };
+
 
             await newCart.save();
+
+
+            newCart.detail[0].product = product;
 
             // Retornar el nuevo carrito junto con los detalles
             return res.status(200).json({ data: newCart });

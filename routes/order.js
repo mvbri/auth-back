@@ -5,6 +5,7 @@ const Image = require("../schema/image");
 const Address = require("../schema/address");
 const User = require("../schema/user");
 const Payment = require("../schema/payment");
+const Category = require("../schema/category");
 
 
 
@@ -82,7 +83,7 @@ const store = async (req, res) => {
 
     } catch (error) {
         console.error(error);
-        res.status(422).json({ message: error });
+        res.status(422).json({ monthsage: error });
     }
 
 }
@@ -93,7 +94,7 @@ const index = async (req, res) => {
         return res.status(200).json({ data: data });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: "error getting orders" });
+        res.status(500).json({ monthsage: "error getting orders" });
 
     }
 
@@ -103,14 +104,18 @@ const update = async (req, res) => {
     const _id = req.params.orderId;
     const { delivery, status } = req.body;
 
-
     try {
 
-        const data = await Order.findByIdAndUpdate(_id, { delivery: delivery, status });
+        const filters = {status: status} 
+
+        if(typeof(delivery) !== "undefined") filters.delivery = delivery
+
+        const data = await Order.findByIdAndUpdate(_id, filters);
+
         return res.status(200).json({ data: data });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: "error getting orders" });
+        res.status(500).json({ monthsage: "error getting orders" });
 
     }
 
@@ -145,7 +150,7 @@ const show = async (req, res) => {
         return res.status(200).json({ data: data });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: "error getting orders" });
+        res.status(500).json({ monthsage: "error getting orders" });
 
     }
 
@@ -184,7 +189,7 @@ const adminShow = async (req, res) => {
         return res.status(200).json({ data: data, delivery: delivery });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: "error getting orders" });
+        res.status(500).json({ monthsage: "error getting orders" });
 
     }
 
@@ -197,10 +202,23 @@ const customerIndex = async (req, res) => {
         return res.status(200).json({ data: data });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: "error getting orders" });
+        res.status(500).json({ monthsage: "error getting orders" });
 
     }
 }
+
+const deliveryIndex = async (req, res) => {
+
+    try {
+        const data = await Order.find({ delivery: req.user.id }).populate(['customer', 'voucher.payment','voucher.image', 'detail.product', 'address']);
+        return res.status(200).json({ data: data });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ monthsage: "error getting orders" });
+
+    }
+}
+
 
 const checkout = async (req, res) => {
 
@@ -214,7 +232,7 @@ const checkout = async (req, res) => {
     }
     catch (error) {
         console.error(error);
-        res.status(500).json({ message: error });
+        res.status(500).json({ monthsage: error });
     }
 
 }
@@ -224,9 +242,9 @@ const getOrdersData = async (req, res) => {
     year = year.getFullYear()
 
     try {
-        // Generar un array con todos los meses del año
-        const meses = Array.from({ length: 12 }, (_, i) => {
-            return { mes: `${String(i + 1).padStart(2, '0')}`, totalPedidos: 0 };
+        // Generar un array con todos los months del año
+        const months = Array.from({ length: 12 }, (_, i) => {
+            return { month: `${String(i + 1).padStart(2, '0')}`, totalOrders: 0 };
         });
         const resultado = await Order.aggregate([
             {
@@ -237,7 +255,7 @@ const getOrdersData = async (req, res) => {
             {
                 $group: {
                     _id: { $dateToString: { format: '%m', date: '$voucher.date' } },
-                    totalPedidos: { $sum: 1 },
+                    totalOrders: { $sum: 1 },
                 },
             },
             {
@@ -247,28 +265,34 @@ const getOrdersData = async (req, res) => {
             },
             {
                 $project: {
-                    mes: '$_id',
-                    totalPedidos: 1,
+                    month: '$_id',
+                    totalOrders: 1,
                     _id: 0,
                 },
             },
         ]);
         // Convertir el resultado a un objeto para mayor facilidad de manejo
-        const resultadoMap = resultado.reduce((acc, actual) => {
-            acc[actual.mes] = actual.totalPedidos;
+        const dataMap = resultado.reduce((acc, item) => {
+            acc[item.month] = item.totalOrders;
             return acc;
         }, {});
-        // Combinar los meses con los resultados, asegurando que todos los meses están presentes
-        const finalResultado = meses.map(mes => {
-            return resultadoMap[mes.mes] || 0 // Usa 0 si no hay pedidos
+        // Combinar los months con los resultados, asegurando que todos los months están presentes
+        const data = months.map(month => {
+            return dataMap[month.month] || 0 // Usa 0 si no hay pedidos
         });
 
-        return res.status(200).json({ data: finalResultado, });
+        const customers = await User.find({role: "customer"}).countDocuments()
+
+        const orders = await Order.find().countDocuments()
+        const products = await Product.find().countDocuments()
+        const category = await Category.find().countDocuments()
+
+        return res.status(200).json({ data: data, orders, customers, category, products});
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: error });
+        res.status(500).json({ monthsage: error });
     }
 }
 
-module.exports = { store, update, customerIndex, index, checkout, show, adminShow, getOrdersData };
+module.exports = { deliveryIndex, store, update, customerIndex, index, checkout, show, adminShow, getOrdersData };
 

@@ -10,10 +10,10 @@ const category = require("./routes/category");
 const { uploadProducts, uploadCategory, uploadSlider, uploadVoucher } = require("./lib/upload");
 const path = require("path");
 const isAdmin = require("./auth/isAdmin");
+const isDelivery = require("./auth/isDelivery");
 const users = require("./routes/users");
 const address = require("./routes/address");
 const pdf = require("./routes/pdf");
-const user = require("./schema/user");
 
 
 require("dotenv").config();
@@ -32,6 +32,8 @@ async function main() {
 
 main().catch(console.error);
 
+
+
 app.post(
   "/api/orders",
   [uploadVoucher.single('image'),
@@ -39,8 +41,13 @@ app.post(
   order.store
 );
 
-
 // admin routes
+
+app.use("/api/admin/order/report/:startDate/:endDate", pdf.orderPdf);
+
+app.get("/api/admin/report", pdf.dataReport);
+
+app.post("/api/admin/report", pdf.order);
 
 app.get("/api/admin/users/delivery", [authenticate, isAdmin], users.getDeliveries);
 
@@ -76,9 +83,9 @@ app.get("/api/admin/products/", [authenticate, isAdmin], product.index);
 
 app.get("/api/admin/category/", [authenticate, isAdmin], category.index);
 
-app.post("/api/admin/category/", [uploadCategory.single('image'),/* authenticate, isAdmin*/], category.create);
+app.post("/api/admin/category/", [authenticate, isAdmin], category.create);
 
-app.get("/api/admin/category/:categoryId", [uploadCategory.single('image'), authenticate, isAdmin], category.show);
+app.get("/api/admin/category/:categoryId", /*[uploadCategory.single('image'), authenticate, isAdmin],*/ category.show);
 
 app.put("/api/admin/category/:categoryId", [uploadCategory.single('image'), authenticate, isAdmin], category.update);
 
@@ -242,14 +249,19 @@ app.use("/api/refresh-token", require("./routes/refreshToken"));
 
 app.use("/api/signup", require("./routes/signup"));
 
-app.use("/api/user", authenticate, require("./routes/user"));
+app.get("/api/user", authenticate, cart.getCart);
+
+app.post("/api/user/update", authenticate, users.updateSession);
+
+app.post("/api/user/reset/:step", users.passwordReset);
 
 
+// delivery routes
 
-app.use("/api/test/pdf/:startDate/:endDate", pdf.show);
+app.get("/api/delivery/orders/", [authenticate, isDelivery], order.deliveryIndex);
 
-
-
+app.get("/api/delivery/orders/:orderId", [authenticate, isDelivery], order.adminShow);
+app.put("/api/delivery/orders/:orderId", [authenticate, isDelivery], order.update);
 
 // app.get("/", (require, res) => {
 //   res.send("Hello Word!!");

@@ -13,8 +13,8 @@ const UserSchema = new Mongoose.Schema({
   name: { type: String, require: true },
   email: { type: String, require: true, unique: true },
   password: { type: String, require: true ,select: false },
-  question: { type: String, require: true },
-  answer: { type: String, require: true, select: false },
+  question: { type: String },
+  answer: { type: String,  select: false },
   role: { type: String, require: true },
   phone: { type: String, require: true },
   status: { type: Boolean, default: true }, // Campo booleano que indica si el usuario esta activo
