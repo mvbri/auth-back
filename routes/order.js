@@ -83,7 +83,7 @@ const store = async (req, res) => {
 
     } catch (error) {
         console.error(error);
-        res.status(422).json({ monthsage: error });
+        res.status(422).json({ message: error });
     }
 
 }
@@ -94,7 +94,7 @@ const index = async (req, res) => {
         return res.status(200).json({ data: data });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ monthsage: "error getting orders" });
+        res.status(500).json({ message: "error getting orders" });
 
     }
 
@@ -115,7 +115,7 @@ const update = async (req, res) => {
         return res.status(200).json({ data: data });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ monthsage: "error getting orders" });
+        res.status(500).json({ message: "error getting orders" });
 
     }
 
@@ -150,7 +150,7 @@ const show = async (req, res) => {
         return res.status(200).json({ data: data });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ monthsage: "error getting orders" });
+        res.status(500).json({ message: "error getting orders" });
 
     }
 
@@ -189,7 +189,7 @@ const adminShow = async (req, res) => {
         return res.status(200).json({ data: data, delivery: delivery });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ monthsage: "error getting orders" });
+        res.status(500).json({ message: "error getting orders" });
 
     }
 
@@ -202,7 +202,7 @@ const customerIndex = async (req, res) => {
         return res.status(200).json({ data: data });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ monthsage: "error getting orders" });
+        res.status(500).json({ message: "error getting orders" });
 
     }
 }
@@ -214,7 +214,7 @@ const deliveryIndex = async (req, res) => {
         return res.status(200).json({ data: data });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ monthsage: "error getting orders" });
+        res.status(500).json({ message: "error getting orders" });
 
     }
 }
@@ -232,7 +232,7 @@ const checkout = async (req, res) => {
     }
     catch (error) {
         console.error(error);
-        res.status(500).json({ monthsage: error });
+        res.status(500).json({ message: error });
     }
 
 }
@@ -290,7 +290,7 @@ const getOrdersData = async (req, res) => {
         return res.status(200).json({ data: data, orders, customers, category, products});
     } catch (error) {
         console.error(error);
-        res.status(500).json({ monthsage: error });
+        res.status(500).json({ message: error });
     }
 }
 

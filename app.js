@@ -7,13 +7,14 @@ const product = require("./routes/product");
 const order = require("./routes/order");
 const cart = require("./routes/cart");
 const category = require("./routes/category");
-const { uploadProducts, uploadCategory, uploadSlider, uploadVoucher } = require("./lib/upload");
+const { uploadProducts, uploadCategory, uploadSlider, uploadVoucher, uploadBackup } = require("./lib/upload");
 const path = require("path");
 const isAdmin = require("./auth/isAdmin");
 const isDelivery = require("./auth/isDelivery");
 const users = require("./routes/users");
 const address = require("./routes/address");
 const pdf = require("./routes/pdf");
+const backups = require("./routes/backups");
 
 
 require("dotenv").config();
@@ -26,12 +27,24 @@ app.use(express.json());
 app.use("/api/public", express.static(path.join(__dirname, "public")));
 
 async function main() {
-  await mongoose.connect(process.env.DB_CONNECTION_STRING);
+  await mongoose.connect(`${process.env.DB_CONNECTION_URL}/${process.env.DB_CONNECTION_NAME}`);
   console.log("Connected to MongoBD");
 }
 
 main().catch(console.error);
 
+
+app.get('/api/backup',[authenticate, isAdmin], backups.index );
+
+app.post('/api/backup/upload',[uploadBackup.single('file'),authenticate, isAdmin], backups.index );
+
+app.post('/api/backup/generate',[authenticate, isAdmin], backups.generate );
+
+app.post('/api/backup/restore',[authenticate, isAdmin], backups.restore );
+
+app.post('/api/backup/destroy',[authenticate, isAdmin], backups.destroy );
+
+app.get('/api/backup/download', backups.download );
 
 
 app.post(
