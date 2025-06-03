@@ -11,7 +11,7 @@ const getCart = async (req, res) => {
 
     try {
 
-        if (_id == null || _id == "undefined") {
+        if (_id !== null || _id !== "undefined") {
 
             const cart = await Cart.findOne({ _id: _id, ordered: false }).populate(['detail.product']);
 
@@ -138,24 +138,53 @@ const add = async (req, res) => {
     try {
         // Obtener el producto junto con las imágenes
         const product = await Product.findById(product_id).populate(['images', 'category']);
-        if (!product) {
-            return res.status(404).json({ message: 'Producto no encontrado' });
-        }
 
         // Verificar si el carrito existe
         if (typeof _id !== "undefined" && _id !== null) {
             const cart = await Cart.findOne({ _id: _id, ordered: false }).populate('detail.product'); // Poblamos el detalle del carrito
 
             if (!cart) {
-                return res.status(404).json({ message: 'Carrito no encontrado' });
+                const newcart = await Cart.findOne({ customer: req.user.id, ordered: false }).sort({ '_id': -1 }).populate(['detail.product']);
+
+                if (!newcart) {
+                    const new_cart = new Cart({
+                        customer: req.user.id,
+                        detail: [{
+                            product: product_id,
+                            quantity: quantity,
+                        }],
+                        total_delivery: delivery,
+                        total_products: product.price * quantity,
+                        total_iva: product.priceIVA * quantity,
+                        total: (product.priceIVA * quantity) + delivery,
+                        total_quantity: quantity
+                    });
+                    Object.assign(cart, new_cart);
+
+
+                } else {
+                    Object.assign(cart, newcart);
+                }
+
+            }
+
+            if (!product) {
+                return res.status(404).json({ message: 'Producto no encontrado' });
             }
 
             // Buscar si el producto ya está en el carrito
             const existingProduct = cart.detail.find(item => item.product._id.toString() === product_id);
 
+            if (quantity > product.stock) {
+                return res.status(400).json({ message: 'Cantidad excede el stock disponible' });
+            }
+
             if (existingProduct) {
                 // Si existe, sumar la cantidad
                 existingProduct.quantity += quantity;
+                if (existingProduct.quantity > product.stock) {
+                    return res.status(400).json({ message: 'Cantidad excede el stock disponible' });
+                }
             } else {
                 // Si no existe, añadir el producto al carrito
                 cart.detail.push({
@@ -210,6 +239,14 @@ const add = async (req, res) => {
             // Retornar el carrito junto con los detalles
             return res.status(200).json({ data: cart });
         } else {
+
+            if (!product) {
+                return res.status(404).json({ message: 'Producto no encontrado' });
+            }
+
+            if (quantity > product.stock) {
+                return res.status(400).json({ message: 'Cantidad excede el stock disponible' });
+            }
             // Crear un nuevo carrito si no existe
             const newCart = new Cart({
                 customer: req.user.id,
@@ -251,12 +288,37 @@ const updateQuantity = async (req, res) => {
             return res.status(404).json({ message: 'Producto no encontrado' });
         }
 
+        if (quantity > product.stock) {
+            return res.status(400).json({ message: 'Cantidad excede el stock disponible' });
+        }
+
         // Verificar si el carrito existe
         if (typeof _id !== "undefined") {
             const cart = await Cart.findOne({ _id: _id, ordered: false }).populate('detail.product'); // Poblamos el detalle del carrito
 
             if (!cart) {
-                return res.status(404).json({ message: 'Carrito no encontrado' });
+                const newcart = await Cart.findOne({ customer: req.user.id, ordered: false }).sort({ '_id': -1 }).populate(['detail.product']);
+
+                if (!newcart) {
+                    const new_cart = new Cart({
+                        customer: req.user.id,
+                        detail: [{
+                            product: product_id,
+                            quantity: quantity,
+                        }],
+                        total_delivery: delivery,
+                        total_products: product.price * quantity,
+                        total_iva: product.priceIVA * quantity,
+                        total: (product.priceIVA * quantity) + delivery,
+                        total_quantity: quantity
+                    });
+                    Object.assign(cart, new_cart);
+
+
+                } else {
+                    Object.assign(cart, newcart);
+                }
+
             }
 
             // Buscar si el producto ya está en el carrito
@@ -355,8 +417,27 @@ const remove = async (req, res) => {
     try {
         // Verificar si el carrito existe
         const cart = await Cart.findOne({ _id: _id, ordered: false }).populate('detail.product');
+
         if (!cart) {
-            return res.status(404).json({ message: 'Carrito no encontrado' });
+            const newcart = await Cart.findOne({ customer: req.user.id, ordered: false }).sort({ '_id': -1 }).populate(['detail.product']);
+
+            if (!newcart) {
+                const new_cart = new Cart({
+                    customer: req.user.id,
+                    detail: [],
+                    total_delivery: delivery,
+                    total_products: 0 * quantity,
+                    total_iva: 0 * quantity,
+                    total: 0 + delivery,
+                    total_quantity: 0
+                });
+                Object.assign(cart, new_cart);
+
+
+            } else {
+                Object.assign(cart, newcart);
+            }
+
         }
 
         // Buscar el índice del producto en el detalle
@@ -430,7 +511,25 @@ const removeAll = async (req, res) => {
         // Verificar si el carrito existe
         const cart = await Cart.findOne({ _id: _id, ordered: false });
         if (!cart) {
-            return res.status(404).json({ message: 'Carrito no encontrado' });
+            const newcart = await Cart.findOne({ customer: req.user.id, ordered: false }).sort({ '_id': -1 }).populate(['detail.product']);
+
+            if (!newcart) {
+                const new_cart = new Cart({
+                    customer: req.user.id,
+                    detail: [],
+                    total_delivery: delivery,
+                    total_products: 0 ,
+                    total_iva: 0,
+                    total: 0 + delivery,
+                    total_quantity: 0
+                });
+                Object.assign(cart, new_cart);
+
+
+            } else {
+                Object.assign(cart, newcart);
+            }
+
         }
 
         const cart_detail = cart.detail

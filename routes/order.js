@@ -66,6 +66,19 @@ const store = async (req, res) => {
 
         await cart.save();
 
+
+        await Promise.all(cart.detail.map(async (item) => {
+
+            let product = await Product.findById(item.product._id);
+
+            product.stock = product.stock - item.quantity;
+
+            await product.save();
+
+        }));
+
+
+
         const newCart = new Cart({
             customer: req.user.id,
             detail: [],
@@ -106,9 +119,9 @@ const update = async (req, res) => {
 
     try {
 
-        const filters = {status: status} 
+        const filters = { status: status }
 
-        if(typeof(delivery) !== "undefined") filters.delivery = delivery
+        if (typeof (delivery) !== "undefined") filters.delivery = delivery
 
         const data = await Order.findByIdAndUpdate(_id, filters);
 
@@ -125,7 +138,7 @@ const show = async (req, res) => {
     const _id = req.params.orderId;
 
     try {
-        const data = await Order.findOne({ customer: req.user.id, _id: _id }).populate(['delivery', 'voucher.payment','voucher.image', 'detail.product', 'address']);
+        const data = await Order.findOne({ customer: req.user.id, _id: _id }).populate(['delivery', 'voucher.payment', 'voucher.image', 'detail.product', 'address']);
 
         const productIds = data.detail.map(item => item.product);
 
@@ -160,7 +173,7 @@ const adminShow = async (req, res) => {
     const _id = req.params.orderId;
 
     try {
-        const data = await Order.findById(_id).populate([ 'customer', 'delivery', 'voucher.payment','voucher.image', 'detail.product', 'address']);
+        const data = await Order.findById(_id).populate(['customer', 'delivery', 'voucher.payment', 'voucher.image', 'detail.product', 'address']);
 
         const delivery = await User.find({ role: "delivery" });
 
@@ -210,7 +223,7 @@ const customerIndex = async (req, res) => {
 const deliveryIndex = async (req, res) => {
 
     try {
-        const data = await Order.find({ delivery: req.user.id }).populate(['customer', 'voucher.payment','voucher.image', 'detail.product', 'address']);
+        const data = await Order.find({ delivery: req.user.id }).populate(['customer', 'voucher.payment', 'voucher.image', 'detail.product', 'address']);
         return res.status(200).json({ data: data });
     } catch (error) {
         console.error(error);
@@ -281,13 +294,13 @@ const getOrdersData = async (req, res) => {
             return dataMap[month.month] || 0 // Usa 0 si no hay pedidos
         });
 
-        const customers = await User.find({role: "customer"}).countDocuments()
+        const customers = await User.find({ role: "customer" }).countDocuments()
 
         const orders = await Order.find().countDocuments()
         const products = await Product.find().countDocuments()
         const category = await Category.find().countDocuments()
 
-        return res.status(200).json({ data: data, orders, customers, category, products});
+        return res.status(200).json({ data: data, orders, customers, category, products });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: error });
