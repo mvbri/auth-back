@@ -36,13 +36,13 @@ main().catch(console.error);
 
 app.get('/api/backup',[authenticate, isAdmin], backups.index );
 
-app.post('/api/backup/upload',[uploadBackup.single('file'),authenticate, isAdmin], backups.index );
+app.post('/api/backup/upload',[uploadBackup.single('file'),/*authenticate, isAdmin*/], backups.index );
 
-app.post('/api/backup/generate',[authenticate, isAdmin], backups.generate );
+app.post('/api/backup/generate'/*,[authenticate, isAdmin]*/, backups.generate );
 
-app.post('/api/backup/restore',[authenticate, isAdmin], backups.restore );
+app.post('/api/backup/restore'/*,[authenticate, isAdmin]*/, backups.restore );
 
-app.post('/api/backup/destroy',[authenticate, isAdmin], backups.destroy );
+app.post('/api/backup/destroy'/*,[authenticate, isAdmin]*/, backups.destroy );
 
 app.get('/api/backup/download', backups.download );
 
