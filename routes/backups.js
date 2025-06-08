@@ -27,7 +27,9 @@ const restore = async (req, res) => {
     try {
         const date = new Date();
 
-        await dumpMongo2Localfile(`./backups/${date.getFullYear()}_${date.getMonth()}_${date.getUTCDay()}_${date.getHours()}_${date.getMinutes()}_${date.getSeconds()}_backup.tar`);
+        const backupDir = path.join(__dirname, '../', 'backups/');
+
+        await dumpMongo2Localfile(`./backups/${date.getFullYear()}-${(date.getMonth()+1).toString().padStart(2, "0")}-${date.getDate().toString().padStart(2, "0")}_${date.getHours().toString().padStart(2, "0")}-${date.getMinutes().toString().padStart(2, "0")}-${date.getSeconds().toString().padStart(2, "0")}_backup.tar`);
 
         await restoreLocalfile2Mongo(`${backupDir}/${file}`);
 
@@ -46,7 +48,7 @@ const generate = async (req, res) => {
     try {
         const date = new Date();
 
-        await dumpMongo2Localfile(`./backups/${date.getFullYear()}_${date.getMonth()}_${date.getUTCDay()}_${date.getHours()}_${date.getMinutes()}_${date.getSeconds()}_backup.tar`);
+        await dumpMongo2Localfile(`./backups/${date.getFullYear()}-${(date.getMonth()+1).toString().padStart(2, "0")}-${date.getDate().toString().padStart(2, "0")}_${date.getHours().toString().padStart(2, "0")}-${date.getMinutes().toString().padStart(2, "0")}-${date.getSeconds().toString().padStart(2, "0")}_backup.tar`);
 
         return await index(req, res);
 
