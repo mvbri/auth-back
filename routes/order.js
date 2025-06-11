@@ -189,12 +189,14 @@ const adminShow = async (req, res) => {
 
         for (const item of data.detail) {
 
-            const productDetail = productMap[item.product._id.toString()]; // Acceder al producto del mapa
+            if (item.product) {
+                const productDetail = productMap[item.product._id.toString()]; // Acceder al producto del mapa
 
-            item.product = {
-                ...productDetail.toObject(), // Convertimos el documento Mongoose a objeto JavaScript
-                images: productDetail.images, // Mapeamos las URLs de las imágenes
-            };
+                item.product = {
+                    ...productDetail.toObject(), // Convertimos el documento Mongoose a objeto JavaScript
+                    images: productDetail.images, // Mapeamos las URLs de las imágenes
+                };
+            }
         }
 
 
