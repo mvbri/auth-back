@@ -145,19 +145,22 @@ const show = async (req, res) => {
         const productsInCart = await Product.find({ _id: { $in: productIds } }).populate(['images', 'category']);
 
         const productMap = productsInCart.reduce((acc, item) => {
+
             acc[item._id.toString()] = item; // Guardamos el producto con su ID como clave
             return acc;
         }, {});
 
 
         for (const item of data.detail) {
+            if (item.product) {
 
-            const productDetail = productMap[item.product._id.toString()]; // Acceder al producto del mapa
+                const productDetail = productMap[item.product._id.toString()]; // Acceder al producto del mapa
 
-            item.product = {
-                ...productDetail.toObject(), // Convertimos el documento Mongoose a objeto JavaScript
-                images: productDetail.images, // Mapeamos las URLs de las imágenes
-            };
+                item.product = {
+                    ...productDetail.toObject(), // Convertimos el documento Mongoose a objeto JavaScript
+                    images: productDetail.images, // Mapeamos las URLs de las imágenes
+                };
+            }
         }
 
         return res.status(200).json({ data: data });

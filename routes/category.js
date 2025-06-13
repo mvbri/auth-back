@@ -146,7 +146,8 @@ const destroy = async (req, res) => {
     try {
         const product = await Product.find({ category: { $in: [req.params.categoryId] } });
 
-        if (product) {
+
+        if (product.length > 0) {
             return res.status(422).json({ message: "La categoría posee productos asociados" });
         }
 
