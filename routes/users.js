@@ -172,7 +172,12 @@ const updateUser = async (req, res) => {
 
     const user = await User.findByIdAndUpdate(_id, data)
 
+    if (typeof answer !== 'undefined') user.answer = answer;
+
+    if (typeof password !== 'undefined') user.password = password;
+
     await user.save();
+    
     return res.status(201).json({ data: user });
 
   } catch (error) {
